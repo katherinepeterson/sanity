@@ -1,4 +1,5 @@
 // Note: INCOMPLETE, but it's a start
+import React from 'react'
 import {ReferenceOptions} from '../reference'
 import {AssetSource} from '../assets'
 import {SlugOptions} from '../slug'
@@ -38,9 +39,7 @@ export interface BaseSchemaType {
   readOnly?: boolean
   liveEdit?: boolean
   icon?: React.ComponentType
-  initialValue?: (
-    arg?: unknown
-  ) => (Promise<never> | never) | Record<string, unknown> | never | undefined
+  initialValue?: ((arg?: any) => Promise<never> | any) | any | undefined
 
   preview?: {
     select?: PreviewValue
