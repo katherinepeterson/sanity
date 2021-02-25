@@ -35,7 +35,7 @@ export interface DocumentPanelHeaderProps {
   onCollapse?: () => void
   onExpand?: () => void
   onSetActiveView: (id: string | null) => void
-  onSplitPane: () => void
+  onSplitPane?: () => void
   onSetFormInputFocus: (path: Path) => void
   onTimelineOpen: () => void
   rev: Chunk | null
