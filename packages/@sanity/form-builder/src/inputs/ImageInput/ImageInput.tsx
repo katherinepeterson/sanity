@@ -16,7 +16,7 @@ import {
   Path,
   SanityDocument,
 } from '@sanity/types'
-import React, {createElement} from 'react'
+import React, {createElement, useCallback} from 'react'
 import PropTypes from 'prop-types'
 
 // Parts
@@ -52,6 +52,7 @@ import PatchEvent, {set, setIfMissing, unset} from '../../PatchEvent'
 import UploadPlaceholder from '../common/UploadPlaceholder'
 import UploadTargetFieldset from '../../utils/UploadTargetFieldset'
 import WithMaterializedReference from '../../utils/WithMaterializedReference'
+import withDocument from '../../utils/withDocument'
 import {urlToFile, base64ToFile} from './utils/image'
 
 import styles from './ImageInput.css'
@@ -103,7 +104,25 @@ type ImageInputState = {
   selectedAssetSource?: any
   hasFocus: boolean
 }
-const globalAssetSources = userDefinedAssetSources ? userDefinedAssetSources : assetSources
+const globalAssetSources = (userDefinedAssetSources ? userDefinedAssetSources : assetSources).map(
+  (source) => ({
+    ...source,
+    component: withDocument(source.component),
+  })
+)
+
+function ImageInputField(props: any) {
+  const {onChange, ...restProps} = props
+
+  const handleChange = useCallback(
+    (ev) => {
+      onChange(ev, props.field)
+    },
+    [onChange, props.field]
+  )
+
+  return <FormBuilderInput {...restProps} onChange={handleChange} />
+}
 
 export default class ImageInput extends React.PureComponent<Props, ImageInputState> {
   static contextTypes = {
@@ -126,7 +145,10 @@ export default class ImageInput extends React.PureComponent<Props, ImageInputSta
     // Allow overriding sources set directly on type.options
     const sourcesFromType = get(props.type, 'options.sources')
     if (Array.isArray(sourcesFromType) && sourcesFromType.length > 0) {
-      this.assetSources = sourcesFromType
+      this.assetSources = sourcesFromType.map((source) => ({
+        ...source,
+        component: withDocument(source.component),
+      }))
     } else if (sourcesFromType) {
       this.assetSources = null
     }
@@ -439,10 +461,11 @@ export default class ImageInput extends React.PureComponent<Props, ImageInputSta
     const fieldValue = value && value[field.name]
     return (
       <div className={styles.field} key={field.name}>
-        <FormBuilderInput
+        <ImageInputField
+          field={field}
           value={fieldValue}
           type={field.type}
-          onChange={(ev) => this.handleFieldChange(ev, field)}
+          onChange={this.handleFieldChange}
           path={[field.name]}
           onFocus={onFocus}
           onBlur={onBlur}
@@ -528,7 +551,7 @@ export default class ImageInput extends React.PureComponent<Props, ImageInputSta
 
   renderAssetSource() {
     const {selectedAssetSource} = this.state
-    const {value, materialize, document} = this.props
+    const {value, materialize} = this.props
     if (!selectedAssetSource) {
       return null
     }
@@ -539,7 +562,6 @@ export default class ImageInput extends React.PureComponent<Props, ImageInputSta
           {(imageAsset) => {
             return (
               <Component
-                document={document}
                 selectedAssets={[imageAsset]}
                 selectionType="single"
                 onClose={this.handleAssetSourceClosed}
@@ -552,7 +574,6 @@ export default class ImageInput extends React.PureComponent<Props, ImageInputSta
     }
     return (
       <Component
-        document={document}
         selectedAssets={[]}
         selectionType="single"
         onClose={this.handleAssetSourceClosed}

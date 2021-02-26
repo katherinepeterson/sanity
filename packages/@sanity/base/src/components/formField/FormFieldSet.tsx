@@ -78,6 +78,8 @@ const Content = styled(Box)<{
   `
 })
 
+const EMPTY_ARRAY = []
+
 export const FormFieldSet = forwardRef(
   (
     props: FormFieldSetProps &
@@ -86,8 +88,8 @@ export const FormFieldSet = forwardRef(
   ) => {
     const {
       __unstable_changeIndicator: changeIndicator = false,
-      __unstable_markers: markers = [],
-      __unstable_presence: presence = [],
+      __unstable_markers: markers = EMPTY_ARRAY,
+      __unstable_presence: presence = EMPTY_ARRAY,
       children,
       collapsed: collapsedProp = false,
       collapsible,
@@ -177,7 +179,7 @@ export const FormFieldSet = forwardRef(
           hidden={collapsed}
           marginTop={1}
           paddingLeft={level === 0 ? 0 : 3}
-          onFocus={handleFocus}
+          onFocus={typeof tabIndex === 'number' && tabIndex > -1 ? handleFocus : undefined}
           ref={forwardedRef}
           tabIndex={tabIndex}
         >

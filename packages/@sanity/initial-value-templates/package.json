@@ -1,6 +1,6 @@
 {
   "name": "@sanity/initial-value-templates",
-  "version": "2.2.6",
+  "version": "2.4.0",
   "description": "Build templates for initial values",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
@@ -27,7 +27,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@sanity/util": "2.2.6",
+    "@sanity/util": "2.4.0",
     "@types/lodash": "^4.14.149",
     "@types/memoize-one": "^3.1.1",
     "@types/node": "^8.0.0",
@@ -37,7 +37,7 @@
   },
   "devDependencies": {
     "@sanity/schema": "2.2.6",
-    "@sanity/types": "2.2.6",
+    "@sanity/types": "2.4.0",
     "@types/jest": "^24.0.23",
     "jest": "^26.4.2",
     "rimraf": "^2.7.1",

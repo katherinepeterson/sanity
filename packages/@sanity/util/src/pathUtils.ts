@@ -52,6 +52,19 @@ export function get(obj: unknown, path: Path | string, defaultVal?: unknown): un
   return acc
 }
 
+const pathsMemo = new Map<string, Path>()
+export function pathFor(path: Path): Path {
+  if (path.length === 0) {
+    return EMPTY_PATH
+  }
+  const asString = toString(path)
+  if (pathsMemo.has(asString)) {
+    return pathsMemo.get(asString)!
+  }
+  pathsMemo.set(asString, path)
+  return path
+}
+
 export function isEqual(path: Path, otherPath: Path): boolean {
   return (
     path.length === otherPath.length &&
@@ -113,7 +126,7 @@ export function trimLeft(prefix: Path, path: Path): Path {
   if (!isSegmentEqual(prefixHead, pathHead)) {
     return path
   }
-  return trimLeft(prefixTail, pathTail)
+  return pathFor(trimLeft(prefixTail, pathTail))
 }
 
 export function trimRight(suffix: Path, path: Path): Path {
@@ -132,7 +145,7 @@ export function trimRight(suffix: Path, path: Path): Path {
     i++
   }
 
-  return path.slice(0, pathLen - i)
+  return pathFor(path.slice(0, pathLen - i))
 }
 
 export function trimChildPath(path: Path, childPath: Path): Path {

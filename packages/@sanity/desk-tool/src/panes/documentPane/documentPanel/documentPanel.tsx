@@ -4,10 +4,11 @@ import classNames from 'classnames'
 import {ScrollContainer} from 'part:@sanity/components/scroll'
 import React, {createElement, useCallback, useMemo, useRef, useState} from 'react'
 import {Path} from '@sanity/types'
-import {useZIndex} from '@sanity/base/components'
+import {LegacyLayerProvider} from '@sanity/base/components'
 import {useDeskToolFeatures} from '../../../features'
 import {useDocumentHistory} from '../documentHistory'
 import {Doc, DocumentView} from '../types'
+import {usePreviewUrl} from '../usePreviewUrl'
 import {DocumentHeaderTitle} from './header/title'
 import {DocumentPanelHeader} from './header/header'
 import {getMenuItems} from './menuItems'
@@ -56,7 +57,6 @@ interface DocumentPanelProps {
 
 export function DocumentPanel(props: DocumentPanelProps) {
   const {toggleInspect, isHistoryOpen, views, activeViewId} = props
-  const zindex = useZIndex()
   const parentPortal = usePortal()
   const features = useDeskToolFeatures()
   const portalRef = useRef<HTMLDivElement | null>(null)
@@ -65,20 +65,23 @@ export function DocumentPanel(props: DocumentPanelProps) {
     setDocumentViewerContainerElement,
   ] = useState<HTMLDivElement | null>(null)
   const {displayed, historyController, open: openHistory} = useDocumentHistory()
-  const activeView = views.find((view) => view.id === activeViewId) || views[0] || {type: 'form'}
-
+  const activeView = useMemo(
+    () => views.find((view) => view.id === activeViewId) || views[0] || {type: 'form'},
+    [activeViewId, views]
+  )
   const {revTime} = historyController
-
+  const hasValue = Boolean(props.value)
+  const previewUrl = usePreviewUrl(props.value)
   const menuItems = useMemo(() => {
     return (
       getMenuItems({
         features,
+        hasValue,
         isHistoryOpen: props.isHistoryOpen,
-        rev: revTime ? revTime.id : null,
-        value: props.value,
+        previewUrl,
       }) || []
     )
-  }, [features, props.isHistoryOpen, revTime, props.value])
+  }, [features, hasValue, props.isHistoryOpen, previewUrl])
 
   const handleContextMenuAction = useCallback(
     (item) => {
@@ -117,40 +120,42 @@ export function DocumentPanel(props: DocumentPanelProps) {
 
   return (
     <Card className={classNames(styles.root, props.isCollapsed && styles.isCollapsed)}>
-      <Layer className={styles.headerContainer} zOffset={zindex.pane}>
-        <DocumentPanelHeader
-          activeViewId={props.activeViewId}
-          idPrefix={props.idPrefix}
-          isClosable={props.isClosable}
-          isCollapsed={props.isCollapsed}
-          isTimelineOpen={props.isTimelineOpen}
-          markers={props.markers}
-          menuItemGroups={props.menuItemGroups}
-          menuItems={menuItems}
-          onCloseView={props.onCloseView}
-          onCollapse={props.onCollapse}
-          onContextMenuAction={handleContextMenuAction}
-          onExpand={props.onExpand}
-          onSetActiveView={props.onSetActiveView}
-          onSplitPane={props.onSplitPane}
-          onTimelineOpen={props.onTimelineOpen}
-          rootElement={props.rootElement}
-          schemaType={props.schemaType}
-          onSetFormInputFocus={props.onFormInputFocus}
-          timelineMode={props.timelineMode}
-          title={
-            <DocumentHeaderTitle
-              documentType={props.documentType}
-              paneTitle={props.paneTitle}
-              value={props.value}
-            />
-          }
-          versionSelectRef={props.versionSelectRef}
-          views={props.views}
-          rev={revTime}
-          isHistoryOpen={isHistoryOpen}
-        />
-      </Layer>
+      <LegacyLayerProvider zOffset="paneHeader">
+        <Layer className={styles.headerContainer}>
+          <DocumentPanelHeader
+            activeViewId={props.activeViewId}
+            idPrefix={props.idPrefix}
+            isClosable={props.isClosable}
+            isCollapsed={props.isCollapsed}
+            isTimelineOpen={props.isTimelineOpen}
+            markers={props.markers}
+            menuItemGroups={props.menuItemGroups}
+            menuItems={menuItems}
+            onCloseView={props.onCloseView}
+            onCollapse={props.onCollapse}
+            onContextMenuAction={handleContextMenuAction}
+            onExpand={props.onExpand}
+            onSetActiveView={props.onSetActiveView}
+            onSplitPane={props.onSplitPane}
+            onTimelineOpen={props.onTimelineOpen}
+            rootElement={props.rootElement}
+            schemaType={props.schemaType}
+            onSetFormInputFocus={props.onFormInputFocus}
+            timelineMode={props.timelineMode}
+            title={
+              <DocumentHeaderTitle
+                documentType={props.documentType}
+                paneTitle={props.paneTitle}
+                value={props.value}
+              />
+            }
+            versionSelectRef={props.versionSelectRef}
+            views={props.views}
+            rev={revTime}
+            isHistoryOpen={isHistoryOpen}
+          />
+        </Layer>
+      </LegacyLayerProvider>
 
       <PortalProvider element={portalElement}>
         <BoundaryElementProvider element={documentViewerContainerElement}>

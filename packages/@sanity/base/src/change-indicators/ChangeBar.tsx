@@ -1,7 +1,7 @@
 import classNames from 'classnames'
 import {Tooltip} from 'part:@sanity/components/tooltip'
-import React, {useCallback, useState} from 'react'
-import {ConnectorContext} from './ChangeIndicatorContext'
+import React, {useCallback, useMemo, useState} from 'react'
+import {ConnectorContext} from './ConnectorContext'
 
 import styles from './ChangeBar.css'
 
@@ -36,36 +36,30 @@ function EditIconSmall(props: Omit<React.SVGProps<SVGElement>, 'ref'>) {
   )
 }
 
-export const ChangeBar = React.forwardRef(
-  (props: {hasFocus: boolean; isChanged: boolean; children: React.ReactNode}, ref: any) => {
-    const [hover, setHover] = useState(false)
-    const {onOpenReviewChanges, isReviewChangesOpen} = React.useContext(ConnectorContext)
+export function ChangeBar(props: {
+  children: React.ReactNode
+  hasFocus: boolean
+  isChanged: boolean
+  disabled?: boolean
+}) {
+  const {children, hasFocus, isChanged, disabled} = props
 
-    const handleMouseEnter = useCallback(() => setHover(true), [])
-    const handleMouseLeave = useCallback(() => setHover(false), [])
+  const [hover, setHover] = useState(false)
+  const {onOpenReviewChanges, isReviewChangesOpen} = React.useContext(ConnectorContext)
 
-    const tooltipContent = (
-      <div className={styles.tooltipContent}>
-        <span>Review changes</span>
-      </div>
-    )
+  const handleMouseEnter = useCallback(() => setHover(true), [])
+  const handleMouseLeave = useCallback(() => setHover(false), [])
 
-    return (
-      <div
-        ref={ref}
-        className={classNames(
-          styles.root,
-          hover && styles.hover,
-          props.hasFocus && styles.focus,
-          props.isChanged && styles.changed,
-          isReviewChangesOpen && styles.reviewChangesOpen
-        )}
-      >
-        <div className={styles.field}>{props.children}</div>
-
+  const tooltip = useMemo(
+    () =>
+      disabled ? null : (
         <Tooltip
-          content={tooltipContent}
-          disabled={!props.isChanged || isReviewChangesOpen}
+          content={
+            <div className={styles.tooltipContent}>
+              <span>Review changes</span>
+            </div>
+          }
+          disabled={!isChanged || isReviewChangesOpen}
           placement="top"
         >
           <div className={styles.wrapper}>
@@ -77,7 +71,7 @@ export const ChangeBar = React.forwardRef(
             </div>
 
             <button
-              tabIndex={isReviewChangesOpen || !props.isChanged ? -1 : 0}
+              tabIndex={isReviewChangesOpen || !isChanged ? -1 : 0}
               type="button"
               aria-label="Review changes"
               onClick={isReviewChangesOpen ? undefined : onOpenReviewChanges}
@@ -87,9 +81,33 @@ export const ChangeBar = React.forwardRef(
             />
           </div>
         </Tooltip>
-      </div>
-    )
-  }
-)
+      ),
+    [
+      handleMouseEnter,
+      handleMouseLeave,
+      isReviewChangesOpen,
+      onOpenReviewChanges,
+      isChanged,
+      disabled,
+    ]
+  )
 
-ChangeBar.displayName = 'ChangeBar'
+  return (
+    <div
+      className={
+        disabled
+          ? undefined
+          : classNames(
+              styles.root,
+              hover && styles.hover,
+              hasFocus && styles.focus,
+              isChanged && styles.changed,
+              isReviewChangesOpen && styles.reviewChangesOpen
+            )
+      }
+    >
+      <div className={styles.field}>{children}</div>
+      {tooltip}
+    </div>
+  )
+}

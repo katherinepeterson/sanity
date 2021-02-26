@@ -31,8 +31,8 @@ export interface ValidationStatus {
 }
 
 const INITIAL_VALIDATION_STATUS: ValidationStatus = {isValidating: true, markers: []}
-function validateEditState(editState) {
-  return getValidationMarkers(editState.draft, editState.published).pipe(
+function validateEditState(_editState: any) {
+  return getValidationMarkers(_editState.draft, _editState.published).pipe(
     map((markers) => ({
       markers,
     }))
@@ -44,19 +44,16 @@ export const validation = memoize(
     return concat(
       of(INITIAL_VALIDATION_STATUS),
       editState(idPair, typeName).pipe(
-        switchMap((editState) =>
+        switchMap((_editState) =>
           concat<Partial<ValidationStatus>>(
             of({isValidating: true}),
-            timer(300).pipe(mapTo(editState), mergeMap(validateEditState)),
+            timer(300).pipe(mapTo(_editState), mergeMap(validateEditState)),
             of({isValidating: false})
           )
         ),
+        scan((prev, next) => ({...prev, ...next}), INITIAL_VALIDATION_STATUS),
         distinctUntilChanged(
-          (prev, next) => prev.isValidating === next.isValidating && prev.markers === prev.markers
-        ),
-        scan(
-          (prev, validationStatus) => ({...prev, ...validationStatus}),
-          INITIAL_VALIDATION_STATUS
+          (prev, next) => prev.isValidating === next.isValidating && prev.markers === next.markers
         )
       )
     ).pipe(publishReplay(1), refCount())
