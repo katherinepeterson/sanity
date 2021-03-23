@@ -1,9 +1,9 @@
 import React from 'react'
-import Fieldset from 'part:@sanity/components/fieldsets/default'
+import {FormFieldSet} from '@sanity/base/components'
 import {FormBuilderInput} from '../../FormBuilderInput'
 import {InvalidValueInput} from '../InvalidValueInput'
 import {resolveTypeName} from '../../utils/resolveTypeName'
-import styles from './styles/Field.css'
+import {FieldWrapper} from './styles'
 
 type FieldProps = {
   field: any
@@ -63,8 +63,8 @@ export default class Field extends React.PureComponent<FieldProps> {
       const isCompatible = actualType === field.type.jsonType
       if (expectedType !== actualType && !isCompatible) {
         return (
-          <div className={styles.root}>
-            <Fieldset legend={field.type.title} level={level} presence={presence}>
+          <FieldWrapper>
+            <FormFieldSet title={field.type.title} level={level} __unstable_presence={presence}>
               <InvalidValueInput
                 value={value}
                 onChange={this.handleChange}
@@ -72,13 +72,13 @@ export default class Field extends React.PureComponent<FieldProps> {
                 actualType={actualType}
                 ref={this.setInput}
               />
-            </Fieldset>
-          </div>
+            </FormFieldSet>
+          </FieldWrapper>
         )
       }
     }
     return (
-      <div className={styles.root}>
+      <FieldWrapper>
         <FormBuilderInput
           value={value}
           type={field.type}
@@ -95,7 +95,7 @@ export default class Field extends React.PureComponent<FieldProps> {
           presence={presence}
           ref={this.setInput}
         />
-      </div>
+      </FieldWrapper>
     )
   }
 }
