@@ -1,16 +1,11 @@
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
-/* eslint-disable react/jsx-handler-names */
-/* eslint-disable react/jsx-no-bind */
-
 import {
   HotkeyOptions,
   RenderBlockFunction,
   usePortableTextEditor,
   usePortableTextEditorSelection,
-  PortableTextEditor,
 } from '@sanity/portable-text-editor'
 import classNames from 'classnames'
-import React from 'react'
+import React, {useMemo} from 'react'
 import {Path} from '@sanity/types'
 import ActionMenu from './ActionMenu'
 import BlockStyleSelect from './BlockStyleSelect'
@@ -19,6 +14,7 @@ import {getBlockStyleSelectProps, getInsertMenuItems, getPTEToolbarActionGroups}
 
 import styles from './Toolbar.css'
 
+const preventDefault = (event) => event.preventDefault()
 interface Props {
   hotkeys: HotkeyOptions
   isFullscreen: boolean
@@ -32,18 +28,20 @@ function PTEToolbar(props: Props) {
   const editor = usePortableTextEditor()
   const selection = usePortableTextEditorSelection()
   const disabled = !selection
-  const actionGroups = React.useMemo(
+  const actionGroups = useMemo(
     () => (editor ? getPTEToolbarActionGroups(editor, selection, onFocus, hotkeys) : []),
     [editor, selection, onFocus, hotkeys]
   )
-  const actionsLen = actionGroups.reduce((acc, x) => acc + x.actions.length, 0)
-  const blockStyleSelectProps = React.useMemo(
-    () => (editor ? getBlockStyleSelectProps(editor) : null),
-    [selection]
+  const actionsLen = useMemo(() => actionGroups.reduce((acc, x) => acc + x.actions.length, 0), [
+    actionGroups,
+  ])
+  const blockStyleSelectProps = useMemo(
+    () => (editor && selection ? getBlockStyleSelectProps(editor) : null),
+    [editor, selection]
   )
-  const insertMenuItems = React.useMemo(
+  const insertMenuItems = useMemo(
     () => (editor ? getInsertMenuItems(editor, selection, onFocus) : []),
-    [selection]
+    [editor, onFocus, selection]
   )
 
   return (
@@ -51,8 +49,8 @@ function PTEToolbar(props: Props) {
       className={classNames(styles.root, isFullscreen && styles.fullscreen)}
       // Ensure the editor doesn't lose focus when interacting
       // with the toolbar (prevent focus click events)
-      onMouseDown={(event) => event.preventDefault()}
-      onKeyPress={(event) => event.preventDefault()}
+      onMouseDown={preventDefault}
+      onKeyPress={preventDefault}
     >
       {blockStyleSelectProps && blockStyleSelectProps.items.length > 1 && (
         <div className={styles.blockStyleSelectContainer}>
@@ -61,7 +59,6 @@ function PTEToolbar(props: Props) {
             className={styles.blockStyleSelect}
             disabled={disabled}
             padding="small"
-            selection={selection}
             readOnly={readOnly}
             renderBlock={renderBlock}
           />
