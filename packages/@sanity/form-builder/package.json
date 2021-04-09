@@ -27,7 +27,7 @@
     "@sanity/icons": "^1.0.1",
     "@sanity/imagetool": "2.7.4",
     "@sanity/mutator": "2.2.6",
-    "@sanity/portable-text-editor": "0.1.25",
+    "@sanity/portable-text-editor": "0.1.26",
     "@sanity/types": "2.8.0",
     "@sanity/ui": "^0.33.12",
     "@sanity/util": "2.8.0",
